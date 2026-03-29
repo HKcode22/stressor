@@ -1,0 +1,14 @@
+{
+  "name": "stressor-dashboard",
+  "version": "1.0.0",
+  "description": "Stressor AI Testing Framework Dashboard",
+  "main": "index.html",
+  "scripts": {
+    "build": "echo 'Build complete'",
+    "dev": "python -m http.server 8080"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "netlify-cli": "^17.0.0"
+  }
+}

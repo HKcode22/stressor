@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stressor Dashboard - Live</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .header {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .header p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-number {
+            font-size: 3rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 1rem;
+            font-weight: 500;
+        }
+        
+        .section {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .section-title {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-bottom: 1.5rem;
+            color: #333;
+        }
+        
+        .run-item {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: transform 0.2s ease;
+        }
+        
+        .run-item:hover {
+            transform: translateX(5px);
+        }
+        
+        .run-info h4 {
+            margin: 0 0 0.5rem 0;
+            color: #333;
+            font-size: 1.1rem;
+        }
+        
+        .run-info p {
+            margin: 0;
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .run-status {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        
+        .status-completed {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-running {
+            background: #fff3cd;
+            color: #856404;
+            animation: pulse 2s infinite;
+        }
+        
+        .status-failed {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #666;
+        }
+        
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+        
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+        
+        .button {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            text-decoration: none;
+            display: inline-block;
+            margin: 0.5rem 0.5rem 0.5rem 0;
+            transition: transform 0.2s ease;
+        }
+        
+        .button:hover {
+            transform: translateY(-2px);
+        }
+        
+        .button.secondary {
+            background: #6c757d;
+        }
+        
+        .nav-buttons {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔒 Stressor Dashboard</h1>
+            <p>Live AI Stress Testing Framework - Real-time Monitoring & Analysis</p>
+        </div>
+
+        <div class="nav-buttons">
+            <a href="/" class="button">← Back to Home</a>
+            <button class="button" onclick="refreshData()">🔄 Refresh Data</button>
+            <button class="button secondary" onclick="runNewTest()">🚀 Run New Test</button>
+        </div>
+
+        <div id="status-message"></div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number" id="total-tests">-</div>
+                <div class="stat-label">Total Tests Run</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="success-rate">-</div>
+                <div class="stat-label">Success Rate</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="vulnerabilities">-</div>
+                <div class="stat-label">Vulnerabilities Found</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="avg-latency">-</div>
+                <div class="stat-label">Avg Response Time</div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">Recent Test Runs</div>
+            <div id="test-runs-container">
+                <div class="loading">Loading test runs...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // API base URL
+        const API_BASE = '/api';
+        
+        // Load dashboard data
+        async function loadDashboard() {
+            try {
+                // Load stats
+                const statsResponse = await fetch(`${API_BASE}/stats`);
+                const stats = await statsResponse.json();
+                
+                document.getElementById('total-tests').textContent = stats.total_tests.toLocaleString();
+                document.getElementById('success-rate').textContent = `${stats.success_rate}%`;
+                document.getElementById('vulnerabilities').textContent = stats.vulnerabilities_found;
+                document.getElementById('avg-latency').textContent = `${stats.average_latency}s`;
+                
+                // Load test runs
+                const runsResponse = await fetch(`${API_BASE}/test-runs`);
+                const runs = await runsResponse.json();
+                
+                const runsContainer = document.getElementById('test-runs-container');
+                runsContainer.innerHTML = runs.map(run => `
+                    <div class="run-item">
+                        <div class="run-info">
+                            <h4>${run.name}</h4>
+                            <p>${run.model || 'Unknown'} • ${run.total_cases} tests • ${formatTime(run.created_at)}</p>
+                            ${run.status === 'running' ? `<div class="progress-bar"><div class="progress-fill" style="width: ${Math.random() * 100}%"></div></div>` : ''}
+                        </div>
+                        <div class="run-status status-${run.status}">${run.status}</div>
+                    </div>
+                `).join('');
+                
+                showMessage('Data loaded successfully!', 'success');
+                
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+                showMessage('Error loading dashboard data. Using demo data.', 'error');
+                loadDemoData();
+            }
+        }
+        
+        // Load demo data if API fails
+        function loadDemoData() {
+            document.getElementById('total-tests').textContent = '1,247';
+            document.getElementById('success-rate').textContent = '94.2%';
+            document.getElementById('vulnerabilities').textContent = '23';
+            document.getElementById('avg-latency').textContent = '1.2s';
+            
+            const demoRuns = [
+                {
+                    name: 'Adversarial Input Testing',
+                    model: 'GPT-4',
+                    total_cases: 156,
+                    status: 'completed',
+                    created_at: '2024-01-01T10:00:00Z'
+                },
+                {
+                    name: 'Prompt Injection Analysis',
+                    model: 'Claude-3',
+                    total_cases: 89,
+                    status: 'completed',
+                    created_at: '2024-01-01T08:00:00Z'
+                },
+                {
+                    name: 'Edge Case Stress Test',
+                    model: 'GPT-3.5-Turbo',
+                    total_cases: 234,
+                    status: 'failed',
+                    created_at: '2024-01-01T06:00:00Z'
+                },
+                {
+                    name: 'Multi-Model Comparison',
+                    model: 'Multiple',
+                    total_cases: 412,
+                    status: 'running',
+                    created_at: '2024-01-01T12:00:00Z'
+                }
+            ];
+            
+            const runsContainer = document.getElementById('test-runs-container');
+            runsContainer.innerHTML = demoRuns.map(run => `
+                <div class="run-item">
+                    <div class="run-info">
+                        <h4>${run.name}</h4>
+                        <p>${run.model} • ${run.total_cases} tests • ${formatTime(run.created_at)}</p>
+                        ${run.status === 'running' ? `<div class="progress-bar"><div class="progress-fill" style="width: ${Math.random() * 100}%"></div></div>` : ''}
+                    </div>
+                    <div class="run-status status-${run.status}">${run.status}</div>
+                </div>
+            `).join('');
+        }
+        
+        // Format time
+        function formatTime(timeString) {
+            const date = new Date(timeString);
+            const now = new Date();
+            const diff = Math.floor((now - date) / 1000 / 60); // minutes
+            
+            if (diff < 60) return `${diff} minutes ago`;
+            if (diff < 1440) return `${Math.floor(diff / 60)} hours ago`;
+            return `${Math.floor(diff / 1440)} days ago`;
+        }
+        
+        // Show message
+        function showMessage(message, type) {
+            const messageDiv = document.getElementById('status-message');
+            messageDiv.innerHTML = `<div class="${type}">${message}</div>`;
+            setTimeout(() => {
+                messageDiv.innerHTML = '';
+            }, 3000);
+        }
+        
+        // Refresh data
+        function refreshData() {
+            showMessage('Refreshing data...', 'success');
+            loadDashboard();
+        }
+        
+        // Run new test (demo)
+        function runNewTest() {
+            showMessage('Test runner would be launched here. In production, this would start a new stress test.', 'success');
+        }
+        
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', loadDashboard);
+        
+        // Auto-refresh every 30 seconds
+        setInterval(loadDashboard, 30000);
+    </script>
+</body>
+</html>
